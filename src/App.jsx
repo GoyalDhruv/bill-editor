@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jsPDF';
+import jsPDF from 'jspdf';
 
 import { PREMIUM_TEMPLATES } from './data/templates';
 import TemplateGallery from './components/TemplateGallery';

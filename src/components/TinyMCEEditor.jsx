@@ -2,55 +2,61 @@ import { useRef, useEffect, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 
 const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
-    const editorRef = useRef(null);
-    const [isReady, setIsReady] = useState(false);
+  const editorRef = useRef(null);
+  const [isReady, setIsReady] = useState(false);
 
-    // TinyMCE configuration
-    const init = {
-        height: 600,
-        menubar: false,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
-            'emoticons', 'quickbars'
-        ],
-        toolbar:
-            'undo redo | blocks | bold italic underline strikethrough | ' +
-            'alignleft aligncenter alignright alignjustify | ' +
-            'bullist numlist outdent indent | ' +
-            'forecolor backcolor emoticons | ' +
-            'table image link media | ' +
-            'removeformat help',
-        quickbars_selection_toolbar:
-            'bold italic underline | quicklink h2 h3 blockquote | ' +
-            'forecolor backcolor | alignleft aligncenter alignright alignjustify',
-        quickbars_insert_toolbar: 'quickimage quicktable media emoticons',
-        toolbar_mode: 'sliding',
-        paste_data_images: true,
-        images_upload_handler: async (blobInfo) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result);
-                };
-                reader.readAsDataURL(blobInfo.blob());
-            });
-        },
-        image_caption: true,
-        image_advtab: true,
-        image_class_list: [
-            { title: 'Responsive', value: 'img-responsive' },
-            { title: 'Rounded', value: 'img-rounded' },
-            { title: 'Circle', value: 'img-circle' }
-        ],
-        table_advtab: true,
-        table_cell_advtab: true,
-        table_row_advtab: true,
-        table_appearance_options: true,
-        table_grid: true,
-        table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
-        content_style: `
+  // Only update content in editor when ready and content differs, inside undo transaction
+  useEffect(() => {
+    if (isReady && editorRef.current && editorRef.current.getContent() !== content) {
+      editorRef.current.undoManager.transact(() => {
+        editorRef.current.setContent(content);
+      });
+    }
+  }, [content, isReady]);
+
+  const init = {
+    height: 600,
+    menubar: false,
+    plugins: [
+      'undo', 'redo', 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+      'insertdatetime', 'media', 'table', 'help', 'wordcount',
+      'emoticons', 'quickbars'
+    ],
+    toolbar:
+      'undo redo | blocks | bold italic underline strikethrough | ' +
+      'alignleft aligncenter alignright alignjustify | ' +
+      'bullist numlist outdent indent | ' +
+      'forecolor backcolor emoticons | ' +
+      'table image link media | ' +
+      'removeformat help',
+    quickbars_selection_toolbar:
+      'bold italic underline | quicklink h2 h3 blockquote | ' +
+      'forecolor backcolor | alignleft aligncenter alignright alignjustify',
+    quickbars_insert_toolbar: 'quickimage quicktable media emoticons',
+    toolbar_mode: 'sliding',
+    paste_data_images: true,
+    images_upload_handler: (blobInfo) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blobInfo.blob());
+      });
+    },
+    image_caption: true,
+    image_advtab: true,
+    image_class_list: [
+      { title: 'Responsive', value: 'img-responsive' },
+      { title: 'Rounded', value: 'img-rounded' },
+      { title: 'Circle', value: 'img-circle' }
+    ],
+    table_advtab: true,
+    table_cell_advtab: true,
+    table_row_advtab: true,
+    table_appearance_options: true,
+    table_grid: true,
+    table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
+    content_style: `
       body { 
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
         font-size: 14px; 
@@ -106,7 +112,7 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
         font-style: italic;
       }
       ul, ol {
-        margin: 1em 0;
+        margin: 1.5em 0;
         padding-left: 2em;
       }
       li {
@@ -123,41 +129,36 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
         border-radius: 50%;
       }
     `,
-        setup: (editor) => {
-            editor.on('init', () => {
-                setIsReady(true);
-                if (onReady) {
-                    onReady(editor);
-                }
-            });
-        }
-    };
+    setup: (editor) => {
+      editor.on('init', () => {
+        setIsReady(true);
+        if (onReady) onReady(editor);
+      });
+    }
+  };
 
-    return (
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-            <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800">Document Editor</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span>Auto-save enabled</span>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
+      <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800">Document Editor</h3>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Auto-save enabled</span>
             </div>
-
-            <Editor
-                apiKey="l5ijq2i5d4dhchm3cin58p9hv6asbcl6x8sw43rlfkgfrnby" // You can get a free API key from TinyMCE
-                onInit={(evt, editor) => {
-                    editorRef.current = editor;
-                }}
-                initialValue={content}
-                init={init}
-                onEditorChange={onUpdate}
-            />
+          </div>
         </div>
-    );
+      </div>
+      <Editor
+        apiKey="l5ijq2i5d4dhchm3cin58p9hv6asbcl6x8sw43rlfkgfrnby"
+        onInit={(evt, editor) => { editorRef.current = editor; }}
+        value={content}
+        init={init}
+        onEditorChange={onUpdate}
+      />
+    </div>
+  );
 };
 
 export default TinyMCEEditor;
