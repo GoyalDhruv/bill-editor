@@ -40,7 +40,7 @@ const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
     return (
         <div className="w-80 h-fit max-h-[600px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="p-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <div className="p-6 bg-gradient-to-r text-white" style={{ background: 'linear-gradient(135deg, rgb(15, 23, 42) 0%, rgb(30, 27, 75) 50%, rgb(15, 23, 42) 100%)' }}>
                 <h3 className="text-lg font-bold mb-2">Merge Fields</h3>
                 <p className="text-blue-100 text-sm opacity-90">
                     Click to insert field placeholders
@@ -71,8 +71,8 @@ const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
                             key={category.id}
                             onClick={() => setSelectedCategory(category.id)}
                             className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 ${selectedCategory === category.id
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             {category.name}

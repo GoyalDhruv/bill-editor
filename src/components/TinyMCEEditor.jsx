@@ -5,7 +5,6 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
   const editorRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Only update content in editor when ready and content differs, inside undo transaction
   useEffect(() => {
     if (isReady && editorRef.current && editorRef.current.getContent() !== content) {
       editorRef.current.undoManager.transact(() => {
@@ -69,6 +68,7 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
         max-width: 800px;
         margin: 0 auto;
         background: white;
+        padding: 0px;
       }
       h1, h2, h3, h4, h5, h6 {
         color: #111827;
@@ -139,17 +139,6 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
 
   return (
     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-200">
-      <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Document Editor</h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Auto-save enabled</span>
-            </div>
-          </div>
-        </div>
-      </div>
       <Editor
         apiKey="l5ijq2i5d4dhchm3cin58p9hv6asbcl6x8sw43rlfkgfrnby"
         onInit={(evt, editor) => { editorRef.current = editor; }}
