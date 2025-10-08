@@ -8,10 +8,8 @@ const EditorToolbar = ({
     onShowTemplates,
     currentTemplate,
     isExporting,
-    onEditorCommand,
-    isEditorReady
 }) => {
-    const { colors, gradients, components } = useTheme();
+    const { gradients } = useTheme();
 
     return (
         <div
@@ -20,7 +18,7 @@ const EditorToolbar = ({
                 background: gradients.dark
             }}
         >
-            <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="max-w-7xl mx-auto px-6 py-2">
                 {/* Main Header */}
                 <div className="flex items-center justify-between">
                     {/* Left Section - Brand & Info */}
@@ -35,12 +33,7 @@ const EditorToolbar = ({
                                 <span className="text-2xl">✨</span>
                             </div>
                             <div>
-                                <h1
-                                    className="text-2xl font-bold bg-clip-text"
-                                // style={{
-                                //     background: gradients.primary
-                                // }}
-                                >
+                                <h1 className="text-2xl font-bold bg-clip-text">
                                     InvoiceCraft Pro
                                 </h1>
                                 <p className="text-blue-200/80 text-sm font-medium">

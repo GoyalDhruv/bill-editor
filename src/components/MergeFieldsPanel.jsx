@@ -1,8 +1,11 @@
 import React from 'react';
+import { useTheme } from '../theme/useTheme';
 
 const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
     const [searchTerm, setSearchTerm] = React.useState('');
     const [selectedCategory, setSelectedCategory] = React.useState('all');
+
+    const { gradients } = useTheme();
 
     const categories = [
         { id: 'all', name: 'All Fields' },
@@ -40,7 +43,9 @@ const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
     return (
         <div className="w-80 h-fit max-h-[600px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="p-6 bg-gradient-to-r text-white" style={{ background: 'linear-gradient(135deg, rgb(15, 23, 42) 0%, rgb(30, 27, 75) 50%, rgb(15, 23, 42) 100%)' }}>
+            <div className="p-6 bg-gradient-to-r text-white" style={{
+                background: gradients.dark
+            }}>
                 <h3 className="text-lg font-bold mb-2">Merge Fields</h3>
                 <p className="text-blue-100 text-sm opacity-90">
                     Click to insert field placeholders
