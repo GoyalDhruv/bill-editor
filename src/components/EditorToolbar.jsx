@@ -4,7 +4,7 @@ import { useTheme } from '../theme/useTheme';
 
 const EditorToolbar = ({
     onExportPDF,
-    onPrint,
+    // onPrint,
     onShowTemplates,
     currentTemplate,
     isExporting,
@@ -78,15 +78,14 @@ const EditorToolbar = ({
                             {/* <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">↓</span> */}
                         </Button>
 
-                        <Button
+                        {/* <Button
                             variant="primary"
                             onClick={onPrint}
                             className="group"
                         >
                             <span className="mr-2 text-lg">🖨️</span>
                             Print
-                            {/* <span className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">⎙</span> */}
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
             </div>

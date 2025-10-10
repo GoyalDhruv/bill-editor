@@ -205,31 +205,31 @@ const App = () => {
     }
   };
 
-  const handlePrint = () => {
-    if (!editorRef.current) return;
-    const content = editorRef.current.getContent();
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${currentTemplate.name} - Invoice</title>
-          <style>
-            body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: #374151; line-height: 1.6;}
-            table { width: 100%; border-collapse: collapse; margin: 1em 0;}
-            table, th, td { border: 1px solid #e5e7eb; }
-            th, td { padding: 12px; text-align: left; }
-            th { background: #f9fafb; }
-            img { max-width: 100%; height: auto; }
-          </style>
-        </head>
-        <body>${content}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-  };
+  // const handlePrint = () => {
+  //   if (!editorRef.current) return;
+  //   const content = editorRef.current.getContent();
+  //   const printWindow = window.open('', '_blank');
+  //   printWindow.document.write(`
+  //     <!DOCTYPE html>
+  //     <html>
+  //       <head>
+  //         <title>${currentTemplate.name} - Invoice</title>
+  //         <style>
+  //           body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: #374151; line-height: 1.6;}
+  //           table { width: 100%; border-collapse: collapse; margin: 1em 0;}
+  //           table, th, td { border: 1px solid #e5e7eb; }
+  //           th, td { padding: 12px; text-align: left; }
+  //           th { background: #f9fafb; }
+  //           img { max-width: 100%; height: auto; }
+  //         </style>
+  //       </head>
+  //       <body>${content}</body>
+  //     </html>
+  //   `);
+  //   printWindow.document.close();
+  //   printWindow.focus();
+  //   printWindow.print();
+  // };
 
   // Loading component
   if (isLoading) {
@@ -248,7 +248,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <EditorToolbar
         onExportPDF={exportToPDF}
-        onPrint={handlePrint}
+        // onPrint={handlePrint}
         onShowTemplates={() => setShowTemplateGallery(true)}
         currentTemplate={currentTemplate}
         isExporting={isExporting}

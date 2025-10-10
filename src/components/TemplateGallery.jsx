@@ -39,13 +39,13 @@ const TemplateGallery = ({ templates, onSelectTemplate, onSaveAsTemplate, curren
                         <h2 className="text-2xl font-bold text-gray-800">Template Gallery</h2>
                         <p className="text-gray-600">Select a template to get started</p>
                     </div>
-                    <button
+                    {/* <button
                         onClick={() => setShowSaveModal(true)}
                         className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg border-0"
                     >
                         <span>💾</span>
                         Save Current as Template
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Templates Grid */}

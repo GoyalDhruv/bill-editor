@@ -16,6 +16,7 @@ const TinyMCEEditor = ({ content, onUpdate, onReady }) => {
   const init = {
     height: 600,
     menubar: false,
+    statusbar: false,
     plugins: [
       'undo', 'redo', 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
       'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
