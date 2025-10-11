@@ -13,6 +13,8 @@
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.14",
     "@tinymce/tinymce-react": "^6.3.0",
+    "grapesjs": "^0.19.5",
+    "grapesjs-preset-newsletter-v2": "^1.0.20",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "react": "^19.1.1",

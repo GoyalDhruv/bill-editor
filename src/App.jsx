@@ -3,9 +3,10 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import EditorToolbar from './components/EditorToolbar';
 import TemplateGallery from './components/TemplateGallery';
-import TinyMCEEditor from './components/TinyMCEEditor';
 import MergeFieldsPanel from './components/MergeFieldsPanel';
-import { PREMIUM_TEMPLATES, DUMMY_MERGE_FIELDS } from './data/templates';
+import { PREMIUM_TEMPLATES } from './templates/templateComponents';
+import GrapesJSEditor from './components/GrapesJSEditor';
+import { DUMMY_MERGE_FIELDS } from './templates/templateData';
 
 // Replace placeholders with actual merge data values
 function replacePlaceholders(templateHtml, mergeData) {
@@ -25,7 +26,7 @@ const App = () => {
 
   const editorRef = useRef(null);
 
-  // Initialize data with loading state
+  // Initialize data
   useEffect(() => {
     const initializeData = async () => {
       setIsLoading(true);
@@ -135,19 +136,16 @@ const App = () => {
   };
 
   const handleEditorUpdate = (newContent) => {
-    // Simply update the editor content - no complex reverting logic
     setEditorContent(newContent);
   };
 
   const insertMergeField = (fieldId) => {
     if (!editorRef.current) return;
-
-    // Insert the merge field placeholder directly
-    editorRef.current.execCommand('mceInsertContent', false, `{{${fieldId}}}`);
-
-    // Update state to reflect the change
-    const currentContent = editorRef.current.getContent();
-    setEditorContent(currentContent);
+    const editor = editorRef.current;
+    editor.Components.addComponent({
+      type: 'text',
+      content: `{{${fieldId}}}`,
+    });
   };
 
   const handleSelectTemplate = (template) => {
@@ -170,66 +168,100 @@ const App = () => {
       type: 'Custom',
       category: 'User',
       description: 'User created template',
-      content: editorContent, // Save the current content as-is
+      content: editorContent,
     };
     setCurrentTemplate(newTemplate);
   };
 
   const exportToPDF = async () => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !currentTemplate) return;
     setIsExporting(true);
     try {
-      // Use the current editor content directly (it already has the values)
-      const content = editorRef.current.getContent();
+      const content = editorRef.current.getHtml();
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = content;
-      tempDiv.style.cssText = `
-        width: 210mm; min-height: 297mm; padding: 20mm;
-        margin: 0 auto; background: white;
-        font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.4;
-      `;
-      document.body.appendChild(tempDiv);
-      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, backgroundColor: '#fff' });
-      document.body.removeChild(tempDiv);
+
+      // Create a complete HTML document with styles
+      const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            ${currentTemplate.style}
+            /* Additional print styles */
+            body { 
+              margin: 0; 
+              padding: 20mm; 
+              background: white;
+              font-family: 'Inter', Arial, sans-serif;
+              font-size: 12px;
+              line-height: 1.4;
+              width: 210mm;
+              min-height: 297mm;
+              box-sizing: border-box;
+            }
+            * { 
+              box-sizing: border-box;
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+      </html>
+    `;
+
+      // Create a temporary iframe to render the content with styles
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = `
+      position: fixed;
+      top: -10000px;
+      left: -10000px;
+      width: 210mm;
+      height: 297mm;
+      border: none;
+      visibility: hidden;
+    `;
+
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
+
+      // Wait for content to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(iframeDoc.body, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#fff',
+        logging: false,
+        allowTaint: true,
+        foreignObjectRendering: true,
+        width: 210 * 3.78, // Convert mm to pixels (210mm * 3.78px/mm)
+        height: 297 * 3.78,
+        windowWidth: 210 * 3.78,
+        windowHeight: 297 * 3.78
+      });
+
+      document.body.removeChild(iframe);
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`invoice-${currentTemplate.name.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+
     } catch (err) {
-      console.error(err);
-      alert('Error exporting PDF');
+      console.error('Error exporting PDF:', err);
+      alert('Error exporting PDF. Please try again.');
     } finally {
       setIsExporting(false);
     }
   };
-
-  // const handlePrint = () => {
-  //   if (!editorRef.current) return;
-  //   const content = editorRef.current.getContent();
-  //   const printWindow = window.open('', '_blank');
-  //   printWindow.document.write(`
-  //     <!DOCTYPE html>
-  //     <html>
-  //       <head>
-  //         <title>${currentTemplate.name} - Invoice</title>
-  //         <style>
-  //           body { font-family: 'Inter', sans-serif; margin: 0; padding: 20px; color: #374151; line-height: 1.6;}
-  //           table { width: 100%; border-collapse: collapse; margin: 1em 0;}
-  //           table, th, td { border: 1px solid #e5e7eb; }
-  //           th, td { padding: 12px; text-align: left; }
-  //           th { background: #f9fafb; }
-  //           img { max-width: 100%; height: auto; }
-  //         </style>
-  //       </head>
-  //       <body>${content}</body>
-  //     </html>
-  //   `);
-  //   printWindow.document.close();
-  //   printWindow.focus();
-  //   printWindow.print();
-  // };
 
   // Loading component
   if (isLoading) {
@@ -248,7 +280,6 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <EditorToolbar
         onExportPDF={exportToPDF}
-        // onPrint={handlePrint}
         onShowTemplates={() => setShowTemplateGallery(true)}
         currentTemplate={currentTemplate}
         isExporting={isExporting}
@@ -262,19 +293,25 @@ const App = () => {
           currentTemplate={currentTemplate}
         />
       ) : (
-        <div className="flex gap-6 p-6 max-w-7xl mx-auto">
-          <div className="flex-1">
-            <TinyMCEEditor
+        <div className="flex h-[calc(100vh-80px)]">
+          {/* Merge Fields Sidebar */}
+          <div className="w-80 flex-shrink-0">
+            <MergeFieldsPanel
+              fields={DUMMY_MERGE_FIELDS}
+              onInsertField={insertMergeField}
+              isEditorReady={isEditorReady}
+            />
+          </div>
+
+          {/* Editor Main Area */}
+          <div className="flex-1 min-w-0">
+            <GrapesJSEditor
               content={editorContent}
               onUpdate={handleEditorUpdate}
               onReady={handleEditorReady}
+              currentTemplate={currentTemplate}
             />
           </div>
-          <MergeFieldsPanel
-            fields={DUMMY_MERGE_FIELDS}
-            onInsertField={insertMergeField}
-            isEditorReady={isEditorReady}
-          />
         </div>
       )}
     </div>
