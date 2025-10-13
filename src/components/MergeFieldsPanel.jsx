@@ -49,7 +49,7 @@ const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
         }
 
         setDraggedField(field);
-        e.dataTransfer.setData('text/plain', `{{${field.id}}}`);
+        e.dataTransfer.setData('text/plain', `${field.sample}`);
         e.dataTransfer.effectAllowed = 'copy';
 
         // Add visual feedback
@@ -153,7 +153,7 @@ const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
                                         )}
                                     </div>
                                     <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-300 font-mono truncate block">
-                                        {`{{${field.id}}}`}
+                                        {`${field.sample}`}
                                     </code>
                                 </div>
                                 {!isDisabled && (

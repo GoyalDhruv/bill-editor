@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import EditorToolbar from './components/EditorToolbar';
@@ -7,13 +7,7 @@ import MergeFieldsPanel from './components/MergeFieldsPanel';
 import { PREMIUM_TEMPLATES } from './templates/templateComponents';
 import GrapesJSEditor from './components/GrapesJSEditor';
 import { DUMMY_MERGE_FIELDS } from './templates/templateData';
-
-// Replace placeholders with actual merge data values
-function replacePlaceholders(templateHtml, mergeData) {
-  return templateHtml.replace(/{{\s*([\w]+)\s*}}/g, (match, p1) => {
-    return mergeData[p1] !== undefined ? mergeData[p1] : match;
-  });
-}
+import { replacePlaceholders } from './utils/replacePlaceholders';
 
 const App = () => {
   const [editorContent, setEditorContent] = useState('');
@@ -23,6 +17,7 @@ const App = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const editorRef = useRef(null);
 
@@ -30,8 +25,6 @@ const App = () => {
   useEffect(() => {
     const initializeData = async () => {
       setIsLoading(true);
-
-      // Simulate loading delay for better UX
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const initialMergeData = {
@@ -106,7 +99,7 @@ const App = () => {
               <div style="font-weight: 500; color: #111827;">SEO Optimization</div>
               <div style="color: #6b7280; font-size: 14px;">Search engine optimization services</div>
             </td>
-            <td style="padding: 16px; text-align: center; color: #6b7280;">1</td>
+            <td style="padding: 16px; text-align: center; color: '#6b7280';">1</td>
             <td style="padding: 16px; text-align: right; color: #111827;">$1,200.00</td>
             <td style="padding: 16px; text-align: right; font-weight: 600; color: #111827;">$1,200.00</td>
           </tr>
@@ -121,7 +114,6 @@ const App = () => {
       setMergeData(initialMergeData);
       setCurrentTemplate(PREMIUM_TEMPLATES[0]);
 
-      // Set initial content with placeholders replaced with actual values
       const initialContent = replacePlaceholders(PREMIUM_TEMPLATES[0].content, initialMergeData);
       setEditorContent(initialContent);
       setIsLoading(false);
@@ -152,7 +144,6 @@ const App = () => {
     setCurrentTemplate(template);
     setShowTemplateGallery(false);
 
-    // Replace placeholders with actual values when switching templates
     const newContent = replacePlaceholders(template.content, mergeData);
     setEditorContent(newContent);
 
@@ -178,16 +169,13 @@ const App = () => {
     setIsExporting(true);
     try {
       const content = editorRef.current.getHtml();
-      const tempDiv = document.createElement('div');
 
-      // Create a complete HTML document with styles
       const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <style>
             ${currentTemplate.style}
-            /* Additional print styles */
             body { 
               margin: 0; 
               padding: 20mm; 
@@ -210,7 +198,6 @@ const App = () => {
       </html>
     `;
 
-      // Create a temporary iframe to render the content with styles
       const iframe = document.createElement('iframe');
       iframe.style.cssText = `
       position: fixed;
@@ -229,7 +216,6 @@ const App = () => {
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
-      // Wait for content to render
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const canvas = await html2canvas(iframeDoc.body, {
@@ -239,7 +225,7 @@ const App = () => {
         logging: false,
         allowTaint: true,
         foreignObjectRendering: true,
-        width: 210 * 3.78, // Convert mm to pixels (210mm * 3.78px/mm)
+        width: 210 * 3.78,
         height: 297 * 3.78,
         windowWidth: 210 * 3.78,
         windowHeight: 297 * 3.78
@@ -261,6 +247,11 @@ const App = () => {
     } finally {
       setIsExporting(false);
     }
+  };
+
+  // Toggle sidebar function
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   // Loading component
@@ -294,8 +285,8 @@ const App = () => {
         />
       ) : (
         <div className="flex h-[calc(100vh-80px)]">
-          {/* Merge Fields Sidebar */}
-          <div className="w-80 flex-shrink-0">
+          {/* Merge Fields Sidebar - Hidden on small screens */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
             <MergeFieldsPanel
               fields={DUMMY_MERGE_FIELDS}
               onInsertField={insertMergeField}
@@ -304,13 +295,40 @@ const App = () => {
           </div>
 
           {/* Editor Main Area */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <GrapesJSEditor
               content={editorContent}
               onUpdate={handleEditorUpdate}
               onReady={handleEditorReady}
               currentTemplate={currentTemplate}
             />
+
+            {/* Mobile Toggle Button - Only show on small screens */}
+            <button
+              onClick={toggleSidebar}
+              className="lg:hidden fixed top-20 left-4 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Mobile Sidebar Overlay */}
+            {isSidebarOpen && (
+              <>
+                <div 
+                  className="lg:hidden fixed inset-0 z-40"
+                  onClick={toggleSidebar}
+                />
+                <div className="lg:hidden fixed inset-y-0 left-0 w-80 z-50 bg-white border-r border-gray-200 overflow-hidden">
+                  <MergeFieldsPanel
+                    fields={DUMMY_MERGE_FIELDS}
+                    onInsertField={insertMergeField}
+                    isEditorReady={isEditorReady}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
