@@ -1,189 +1,301 @@
 import React, { useState } from 'react';
-import { useTheme } from '../theme/useTheme';
+import {
+    Box,
+    Typography,
+    TextField,
+    Chip,
+    Card,
+    CardContent,
+    InputAdornment,
+    useTheme,
+    useMediaQuery,
+    alpha
+} from '@mui/material';
+import {
+    Search as SearchIcon,
+    DragIndicator as DragIcon,
+    Person as PersonIcon,
+    Business as BusinessIcon,
+    AttachMoney as MoneyIcon,
+    Event as EventIcon,
+    Description as DescriptionIcon
+} from '@mui/icons-material';
 
 const MergeFieldsPanel = ({ fields, onInsertField, isEditorReady }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [draggedField, setDraggedField] = useState(null);
-
-    const { gradients } = useTheme();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const categories = [
-        { id: 'all', name: 'All' },
-        { id: 'customer', name: 'Customer' },
-        { id: 'company', name: 'Company' },
-        { id: 'financial', name: 'Financial' },
-        { id: 'dates', name: 'Dates' }
+        { id: 'all', name: 'All', icon: <DescriptionIcon fontSize="small" /> },
+        { id: 'customer', name: 'Customer', icon: <PersonIcon fontSize="small" /> },
+        { id: 'company', name: 'Company', icon: <BusinessIcon fontSize="small" /> },
+        { id: 'financial', name: 'Financial', icon: <MoneyIcon fontSize="small" /> },
+        { id: 'dates', name: 'Dates', icon: <EventIcon fontSize="small" /> },
     ];
 
     const getFieldCategory = (fieldId) => {
-        if (fieldId.includes('customer') || fieldId.includes('name') || fieldId.includes('address') || fieldId.includes('email') || fieldId.includes('phone'))
+        if (
+            fieldId.includes('customer') ||
+            fieldId.includes('name') ||
+            fieldId.includes('address') ||
+            fieldId.includes('email') ||
+            fieldId.includes('phone')
+        )
             return 'customer';
         if (fieldId.includes('company')) return 'company';
-        if (fieldId.includes('amount') || fieldId.includes('total') || fieldId.includes('subtotal') || fieldId.includes('tax') || fieldId.includes('balance'))
+        if (
+            fieldId.includes('amount') ||
+            fieldId.includes('total') ||
+            fieldId.includes('subtotal') ||
+            fieldId.includes('tax') ||
+            fieldId.includes('balance')
+        )
             return 'financial';
-        if (fieldId.includes('date') || fieldId.includes('Date')) return 'dates';
+        if (fieldId.toLowerCase().includes('date')) return 'dates';
         return 'other';
     };
 
-    const filteredFields = fields.filter(field => {
-        const matchesSearch = field.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredFields = fields.filter((field) => {
+        const matchesSearch =
+            field.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
             field.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || getFieldCategory(field.id) === selectedCategory;
+        const matchesCategory =
+            selectedCategory === 'all' || getFieldCategory(field.id) === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
     const fieldIcons = {
-        customer: '👤',
-        company: '🏢',
-        financial: '💰',
-        dates: '📅',
-        other: '📋'
+        customer: <PersonIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />,
+        company: <BusinessIcon fontSize="small" sx={{ color: theme.palette.secondary.main }} />,
+        financial: <MoneyIcon fontSize="small" sx={{ color: theme.palette.success.main }} />,
+        dates: <EventIcon fontSize="small" sx={{ color: theme.palette.warning.main }} />,
+        other: <DescriptionIcon fontSize="small" sx={{ color: theme.palette.info.main }} />,
     };
 
-    // Drag start handler
     const handleDragStart = (e, field) => {
         if (!isEditorReady) {
             e.preventDefault();
             return;
         }
-
-        setDraggedField(field);
         e.dataTransfer.setData('text/plain', `${field.sample}`);
         e.dataTransfer.effectAllowed = 'copy';
-
-        // Add visual feedback
-        e.currentTarget.classList.add('opacity-50', 'bg-blue-100');
     };
 
-    // Drag end handler
-    const handleDragEnd = (e) => {
-        e.currentTarget.classList.remove('opacity-50', 'bg-blue-100');
-        setDraggedField(null);
-    };
-
-    // Click handler as fallback
     const handleClick = (fieldId) => {
-        if (isEditorReady) {
-            onInsertField(fieldId);
-        }
+        if (isEditorReady) onInsertField(fieldId);
     };
 
     return (
-        <div className="h-full bg-white border-r border-gray-200 flex flex-col">
-            {/* Header - Compact */}
-            <div
-                className="p-4 text-white border-b border-blue-600"
-                style={{ background: gradients.dark }}
+        <Box
+            sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'background.paper',
+                borderRight: `1px solid ${theme.palette.divider}`,
+                minWidth: 280,
+            }}
+        >
+            {/* Header */}
+            <Box
+                sx={{
+                    px: 3,
+                    py: 2,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                }}
             >
-                <h3 className="text-sm font-semibold mb-1">Merge Fields</h3>
-                <p className="text-blue-100 text-xs opacity-90">
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
+                    Merge Fields
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
                     Drag & drop or click to insert fields
-                </p>
-            </div>
+                </Typography>
+            </Box>
 
-            {/* Search - Compact */}
-            <div className="p-3 border-b border-gray-200">
-                <div className="relative">
-                    <input
-                        type="text"
-                        placeholder="Search fields..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-800 placeholder-gray-400 pl-9"
-                    />
-                    <div className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
-            </div>
+            {/* Search */}
+            <Box sx={{ px: 2, py: 2 }}>
+                <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Search fields..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
+                            </InputAdornment>
+                        ),
+                    }}
+                    sx={{
+                        '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            backgroundColor: 'background.default',
+                            '&:hover fieldset': {
+                                borderColor: theme.palette.primary.light,
+                            },
+                            '&.Mui-focused fieldset': {
+                                borderColor: theme.palette.primary.main,
+                                borderWidth: 1,
+                            },
+                        },
+                    }}
+                />
+            </Box>
 
-            {/* Categories - More Compact */}
-            <div className="p-3 border-b border-gray-200 bg-gray-50">
-                <div className="flex flex-wrap gap-1">
-                    {categories.map(category => (
-                        <button
+            {/* Categories */}
+            <Box sx={{ px: 2, py: 1, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {categories.map((category) => (
+                        <Chip
                             key={category.id}
+                            label={category.name}
+                            icon={category.icon}
                             onClick={() => setSelectedCategory(category.id)}
-                            className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${selectedCategory === category.id
-                                ? 'bg-blue-600 text-white shadow-sm'
-                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
-                                }`}
-                            type="button"
-                        >
-                            {category.name}
-                        </button>
+                            size="small"
+                            variant={selectedCategory === category.id ? "filled" : "outlined"}
+                            color={selectedCategory === category.id ? "primary" : "default"}
+                            sx={{
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                                height: 28,
+                                '& .MuiChip-icon': {
+                                    fontSize: '0.9rem',
+                                },
+                            }}
+                        />
                     ))}
-                </div>
-            </div>
+                </Box>
+            </Box>
 
-            {/* Fields List - Compact with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                {filteredFields.length ? filteredFields.map(field => {
-                    const category = getFieldCategory(field.id);
-                    const isDisabled = !isEditorReady;
+            {/* Fields List */}
+            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                {filteredFields.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {filteredFields.map((field) => {
+                            const category = getFieldCategory(field.id);
+                            const isDisabled = !isEditorReady;
 
-                    return (
-                        <div
-                            key={field.id}
-                            draggable={!isDisabled}
-                            onDragStart={(e) => handleDragStart(e, field)}
-                            onDragEnd={handleDragEnd}
-                            onClick={() => handleClick(field.id)}
-                            className={`
-                                w-full p-3 rounded-lg text-left transition-all duration-200 cursor-pointer
-                                ${isDisabled
-                                    ? 'bg-gray-100 cursor-not-allowed opacity-50'
-                                    : 'bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 hover:shadow-sm draggable-field'
-                                }
-                                ${draggedField?.id === field.id ? 'bg-blue-100 border-blue-300' : ''}
-                            `}
-                        >
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm flex-shrink-0">{fieldIcons[category]}</span>
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-medium text-gray-800 text-xs mb-1 truncate flex items-center gap-1">
-                                        {field.label}
-                                        {!isDisabled && (
-                                            <span className="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                ↳
-                                            </span>
-                                        )}
-                                    </div>
-                                    <code className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded border border-gray-300 font-mono truncate block">
-                                        {`${field.sample}`}
-                                    </code>
-                                </div>
-                                {!isDisabled && (
-                                    <div className="text-gray-400 opacity-60">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
-                                        </svg>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                }) : (
-                    <div className="text-center py-6 text-gray-500">
-                        <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <p className="text-sm">No fields found</p>
-                        <p className="text-xs mt-1">Try a different search</p>
-                    </div>
+                            return (
+                                <Card
+                                    key={field.id}
+                                    draggable={!isDisabled}
+                                    onDragStart={(e) => handleDragStart(e, field)}
+                                    onClick={() => handleClick(field.id)}
+                                    sx={{
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                        opacity: isDisabled ? 0.6 : 1,
+                                        transition: 'all 0.2s ease-in-out',
+                                        border: `1px solid ${theme.palette.divider}`,
+                                        borderRadius: 2,
+                                        backgroundColor: 'background.paper',
+                                        '&:hover': !isDisabled && {
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: theme.shadows[4],
+                                            borderColor: theme.palette.primary.light,
+                                        },
+                                        '&:active': !isDisabled && {
+                                            transform: 'translateY(0)',
+                                        },
+                                    }}
+                                >
+                                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: 1,
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                                flexShrink: 0,
+                                            }}>
+                                                {fieldIcons[category]}
+                                            </Box>
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <Typography
+                                                    variant="body2"
+                                                    sx={{
+                                                        fontWeight: 600,
+                                                        color: 'text.primary',
+                                                        fontSize: '0.8rem',
+                                                        lineHeight: 1.2,
+                                                        mb: 0.5,
+                                                    }}
+                                                >
+                                                    {field.label}
+                                                </Typography>
+                                                <Box
+                                                    component="code"
+                                                    sx={{
+                                                        display: 'block',
+                                                        fontSize: '0.7rem',
+                                                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                                                        color: theme.palette.primary.dark,
+                                                        padding: '2px 6px',
+                                                        borderRadius: 1,
+                                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                                        fontFamily: 'monospace',
+                                                        wordBreak: 'break-all',
+                                                    }}
+                                                >
+                                                    {field.sample}
+                                                </Box>
+                                            </Box>
+                                            {!isDisabled && (
+                                                <DragIcon
+                                                    fontSize="small"
+                                                    sx={{
+                                                        color: 'text.disabled',
+                                                        flexShrink: 0,
+                                                        mt: 0.5,
+                                                    }}
+                                                />
+                                            )}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </Box>
+                ) : (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                            No fields found
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                            Try a different search or category
+                        </Typography>
+                    </Box>
                 )}
-            </div>
+            </Box>
 
-            {/* Footer with helpful info */}
-            <div className="p-2 border-t border-gray-200 bg-gray-50">
-                <p className="text-xs text-gray-500 text-center">
-                    {filteredFields.length} fields • Drag to editor
-                </p>
-            </div>
-        </div>
+            {/* Footer */}
+            <Box
+                sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderTop: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.02),
+                }}
+            >
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: 'text.secondary',
+                        textAlign: 'center',
+                        display: 'block',
+                        fontSize: '0.7rem',
+                    }}
+                >
+                    {filteredFields.length} fields available • Drag to editor
+                </Typography>
+            </Box>
+        </Box>
     );
 };
 
